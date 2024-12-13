@@ -1,5 +1,17 @@
 {
   "dependencies": {
-    "firebase": "^11.1.0"
-  }
+    "express": "^4.21.2",
+    "firebase": "^11.1.0",
+    "react": "^19.0.0"
+  },
+  "name": "final",
+  "version": "1.0.0",
+  "main": "scripts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
