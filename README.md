@@ -1,2 +1,2 @@
-# campus-event
+# Campus-Event
 Campus Event Application
