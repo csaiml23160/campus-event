@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Account | Campus Events</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Campus Events</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="events.html">Events</a></li>
+                    <li><a href="register.html">Register</a></li>
+                    <li><a href="user_account.html" class="active">User Account</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="user-account">
+        <div class="container">
+            <h2>User Account</h2>
+            <p>Log in or create an account to save your details for faster event registration.</p>
+
+            <!-- Google Sign-In Button -->
+            <button id="google-sign-in">Sign in with Google</button>
+
+            <!-- Login Section -->
+            <form id="login-form" action="#" method="post">
+                <h3>Log In</h3>
+                <label for="email">Email:</label>
+                <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+
+                <button type="submit">Log In</button>
+            </form>
+
+            <hr>
+
+            <!-- Registration Section -->
+            <form id="register-form" action="#" method="post">
+                <h3>Create Account</h3>
+                <label for="name">Full Name:</label>
+                <input type="text" id="register-name" name="name" placeholder="Enter your full name" required>
+
+                <label for="branch">Branch:</label>
+                <input type="text" id="register-branch" name="branch" placeholder="Enter your branch" required>
+
+                <label for="section">Section:</label>
+                <input type="text" id="register-section" name="section" placeholder="Enter your section" required>
+
+                <label for="roll">Roll Number:</label>
+                <input type="text" id="register-roll" name="roll" placeholder="Enter your roll number" required>
+
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" name="email" placeholder="Enter your email" required>
+
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" name="password" placeholder="Enter a password" required>
+
+                <button type="submit">Create Account</button>
+            </form>
+
+            <hr>
+
+            <!-- Logout Section -->
+            <button id="logout-btn" style="display: none;">Log Out</button>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Campus Events | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmy7Ikbl7eTtb18wKB6S_84coRQGeGGPE",
+            authDomain: "campus-event-application.firebaseapp.com",
+            projectId: "campus-event-application",
+            storageBucket: "campus-event-application.firebasestorage.app",
+            messagingSenderId: "713132723121",
+            appId: "1:713132723121:web:6638b92871965765bc4b90",
+            measurementId: "G-5FN4MH18PM"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Google Authentication Provider
+        const provider = new GoogleAuthProvider();
+
+        // Google Sign-In Button
+        const googleSignInBtn = document.getElementById('google-sign-in');
+        googleSignInBtn.addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                // Store user data in Firestore
+                await setDoc(doc(db, 'users', user.uid), {
+                    name: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL
+                });
+
+                // Hide Google Sign-In button and show Logout button
+                googleSignInBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                alert('Google Sign-In Successful');
+            } catch (error) {
+                console.error('Error during Google Sign-In: ', error.message);
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Register User
+        const registerForm = document.getElementById('register-form');
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('register-name').value;
+                const branch = document.getElementById('register-branch').value;
+                const section = document.getElementById('register-section').value;
+                const roll = document.getElementById('register-roll').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, 'users', userCredential.user.uid), {
+                        name,
+                        branch,
+                        section,
+                        roll,
+                        email
+                    });
+                    alert('Account created successfully!');
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+        }
+
+        // Login User
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    alert('Login successful!');
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+        }
+
+        // Log Out User
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    alert('Logged out successfully!');
+                    logoutBtn.style.display = 'none';
+                    googleSignInBtn.style.display = 'block'; // Show Google Sign-In button again
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+        }
+
+        // Auth State Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    alert(`Welcome, ${userData.name}`);
+                    logoutBtn.style.display = 'block';
+                    googleSignInBtn.style.display = 'none'; // Hide Google Sign-In button
+                }
+            } else {
+                logoutBtn.style.display = 'none';
+                googleSignInBtn.style.display = 'block'; // Show Google Sign-In button if no user
+            }
+        });
+    </script>
+</body>
+</html>
